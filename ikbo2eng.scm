@@ -11,6 +11,28 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
     ((->> a)
      a)))
 
+(define special-words
+  '(("ang" . "the")
+    ("Ang" . "The")
+    ("tik" . "hi")
+    ("Tik" . "Hi")
+    ("ikabo" . "a/n")
+    ("Ikabo" . "A/n")
+    ("iktbo" . "to")
+    ("Iktbo" . "To")
+    ("biz" . "without")
+    ("Biz" . "Without")
+    ("bik" . "bye")
+    ("Bik" . "Bye")
+    ("ye" . "I")
+    ("Ye" . "I")
+    ("yo"  . "..")
+    ("Yo"  . "..")
+    ("ikembo" . "am")
+    ("Ikembo" . "Am")
+    ("bik'bos" . "goodbye")
+    ("Bik'bos" . "Goodbye")))
+
 ; decode-vowel :: Character -> Character
 (define (decode-vowel c)
   (cond ((char=? c #\a) #\u)
@@ -48,20 +70,6 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
         (string-take str (- (string-length str) 3))
         (string-drop str (- (string-length str) 1))))))
 
-(define special-words
-  '(("ang" . "the")
-    ("Ang" . "The")
-    ("ikabo" . "a/n")
-    ("Ikabo" . "A/n")
-    ("iktbo" . "to")
-    ("Iktbo" . "To")
-    ("biz" . "without")
-    ("Biz" . "Without")
-    ("bik" . "bye")
-    ("Bik" . "Bye")
-    ("bik'bos" . "goodbye")
-    ("Bik'bos" . "Goodbye")))
-
 ; translate-word :: String -> String
 (define (translate-word str)
   (let ((gloss (assoc-ref special-words str)))
@@ -72,8 +80,6 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
         (decode-suffix)
         (string-map decode-vowel))
       gloss)))
-
-; The folowing function could be used for translating a list of runs.
 
 ; synthesize-runs :: [(Bool . String)] -> String
 (define (synthesize-runs runs)
