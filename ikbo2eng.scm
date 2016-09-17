@@ -47,15 +47,59 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
         (string-take str (- (string-length str) 3))
         (string-drop str (- (string-length str) 1))))))
 
+(define special-words
+  '(("ang" . "the")
+    ("Ang" . "The")
+    ("ikabo" . "a/n")
+    ("Ikabo" . "A/n")
+    ("iktbo" . "to")
+    ("Iktbo" . "To")
+    ("biz" . "without")
+    ("Biz" . "Without")
+    ("bik" . "bye")
+    ("Bik" . "Bye")
+    ("bik'bos" . "goodbye")
+    ("Bik'bos" . "Goodbye")))
+
 ; translate-word :: String -> String
 (define (translate-word str)
-  (->>
-    str
-    (decode-prefix)
-    (decode-suffix)
-    (string-map decode-vowel)))
+  (let ((gloss (assoc-ref special-words str)))
+    (if (eq? #f gloss)
+      (->>
+        str
+        (decode-prefix)
+        (decode-suffix)
+        (string-map decode-vowel))
+      gloss)))
+
+; The folowing function could be used for translating a list of runs.
+
+; synthesize-runs :: [(Bool . String)] -> String
+(define (synthesize-runs runs)
+  (apply string-append
+    (map
+      (lambda (run)
+        (if (car run)
+          (translate-word (cdr run))
+          (cdr run)))
+      runs)))
 
 #! These parts are currently not in a working state.
+
+; break-into-runs :: String -> [(Bool . String)]
+(define (break-into-runs str)
+  (define (iter in-word? current acc)
+    (if in-word?
+      (if (char-alphabetic? c)
+        (iter in-word? (cons c current) acc)
+        (iter (not in-word?)
+              '()
+              (cons
+                (apply string (reverse current))
+                acc)))
+      (if (char-alphabetic? c)
+        (iter (not in-word?)
+              '()
 
 ; break-by-words :: String -> [String]
 (define (break-by-words str)
