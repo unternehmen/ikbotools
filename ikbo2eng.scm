@@ -55,7 +55,21 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
     (decode-suffix)
     (string-map decode-vowel)))
 
-#!
+#! These parts are currently not in a working state.
+
+; break-by-words :: String -> [String]
+(define (break-by-words str)
+  (let* ((start (string-index str word-char?))
+         (end   (string-index str (negate word-char?) start))
+         (word  (substring str start end)))
+    (if (= start 0)
+      ; The whole next chunk is a word.  Read it.
+      (cons 
+      ; The whole next chunk is non-word followed by a word.
+          (substring str
+            (string-index str word-char?)
+            (string-index str (negate word-char?)))))
+
 ; translate-text :: String -> String
 (define (translate-text str)
   (string-fold (lambda (c acc) ) '() s)
@@ -66,4 +80,5 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
   ; Map selectively through translate-word and then flatten again into
   ; one string.
   )
+
 !#
