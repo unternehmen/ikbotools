@@ -24,35 +24,28 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
         ((char=? c #\U) #\O)
         (else c)))
 
-; is-vowel? :: Character -> Bool
-(define (is-vowel? c)
-  (or (char-ci=? c #\a)
-      (char-ci=? c #\e)
-      (char-ci=? c #\i)
-      (char-ci=? c #\o)
-      (char-ci=? c #\u)))
-
-; BUG - the following function assumes the string *has* 2 or 3 characters
-;       what should it do in cases that don't?
-
 ; decode-prefix :: String -> String
 (define (decode-prefix str)
-  (if (is-vowel? (string-ref str 0))
-    (string-append
-      (string-take str 1)
-      (string-drop str 2))
-    (string-append
-      (string-take str 1)
-      (string-drop str 3))))
-
-; BUG - the following function assumes the string *has* 1 or 3 characters
-;       what should it do in cases that don't?
+  (let ((match (string-match "^([aeiouAEIOU])k" str)))
+    (if (eq? #f match)
+      (let ((match (string-match "^(.)ik" str)))
+        (if (eq? #f match)
+          str
+          (string-append
+            (string-take str 1)
+            (string-drop str 3))))
+      (string-append
+        (string-take str 1)
+        (string-drop str 2)))))
 
 ; decode-suffix :: String -> String
 (define (decode-suffix str)
-  (string-append
-    (string-take str (- (string-length str) 3))
-    (string-drop str (- (string-length str) 1))))
+  (let ((match (string-match "bo(.)$" str)))
+    (if (eq? #f match)
+      str
+      (string-append
+        (string-take str (- (string-length str) 3))
+        (string-drop str (- (string-length str) 1))))))
 
 ; translate-word :: String -> String
 (define (translate-word str)
@@ -65,6 +58,7 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
 #!
 ; translate-text :: String -> String
 (define (translate-text str)
+  (string-fold (lambda (c acc) ) '() s)
   ; Split `str` into runs of text:
   ;   1. which need to be translated
   ;   2. which ought to be retained as they are
