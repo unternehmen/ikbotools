@@ -2,6 +2,7 @@
 # -*- scheme -*-
 exec /usr/bin/env guile-2.0 -l "$0" "$@"
 !#
+(use-modules (ice-9 regex))
 
 (define-syntax ->>
   (syntax-rules ()
@@ -84,45 +85,28 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
           (cdr run)))
       runs)))
 
-#! These parts are currently not in a working state.
+; bug - replace below algorithm by an iterative one?
 
-; break-into-runs :: String -> [(Bool . String)]
-(define (break-into-runs str)
-  (define (iter in-word? current acc)
-    (if in-word?
-      (if (char-alphabetic? c)
-        (iter in-word? (cons c current) acc)
-        (iter (not in-word?)
-              '()
-              (cons
-                (apply string (reverse current))
-                acc)))
-      (if (char-alphabetic? c)
-        (iter (not in-word?)
-              '()
-
-; break-by-words :: String -> [String]
-(define (break-by-words str)
-  (let* ((start (string-index str word-char?))
-         (end   (string-index str (negate word-char?) start))
-         (word  (substring str start end)))
-    (if (= start 0)
-      ; The whole next chunk is a word.  Read it.
-      (cons 
-      ; The whole next chunk is non-word followed by a word.
-          (substring str
-            (string-index str word-char?)
-            (string-index str (negate word-char?)))))
+; break-by-wordness :: String -> [(Bool . String)]
+(define (break-by-wordness str)
+  (define (is-word? c)
+    (or (char-alphabetic? c)
+        (char=? c #\')))
+  (define (string-index-or-all str pred?)
+    (let ((result (string-index str pred?)))
+      (if (eq? #f result)
+        (string-length str)
+        result)))
+  (if (string-null? str)
+    '()
+    (if (is-word? (string-ref str 0))
+      (let ((index (string-index-or-all str (negate is-word?))))
+        (cons (cons #t (substring str 0 index))
+              (break-by-wordness (string-drop str index))))
+      (let ((index (string-index-or-all str is-word?)))
+        (cons (cons #f (substring str 0 index))
+              (break-by-wordness (string-drop str index)))))))
 
 ; translate-text :: String -> String
 (define (translate-text str)
-  (string-fold (lambda (c acc) ) '() s)
-  ; Split `str` into runs of text:
-  ;   1. which need to be translated
-  ;   2. which ought to be retained as they are
-  ; and map through translate-word.
-  ; Map selectively through translate-word and then flatten again into
-  ; one string.
-  )
-
-!#
+  (synthesize-runs (break-by-wordness str)))
