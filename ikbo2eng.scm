@@ -49,13 +49,35 @@ exec /usr/bin/env guile-2.0 -l "$0" "$@"
 
 ; decode-prefix :: String -> String
 (define (decode-prefix str)
-  (let ((match (string-match "^([aeiouAEIOU])k" str)))
+  (let ((match (string-match "^[aeiouAEIOU]k" str)))
     (if (eq? #f match)
-      (let ((match (string-match "^(.)ik" str)))
+      (let ((match (string-match "^[aeiouAEIOU]zk" str)))
         (if (eq? #f match)
-          str
+          (let ((match (string-match "^(.)ik" str)))
+            (if (eq? #f match)
+              (let ((match (string-match "^(.)izk" str)))
+                (if (eq? #f match)
+                  str
+                  (string-append
+                    (if (char-lower-case? (string-ref str 0))
+                      "e"
+                      "E")
+                    (if (string-contains "aeiouAEIOU" (string-take str 1))
+                      "n "
+                      " ")
+                    (string-downcase (string-take str 1))
+                    (string-drop str 4))))
+              (string-append
+                (string-take str 1)
+                (string-drop str 3))))
           (string-append
-            (string-take str 1)
+            (if (char-lower-case? (string-ref str 0))
+              "e"
+              "E")
+            (if (string-contains "aeiouAEIOU" (string-take str 1))
+              "n "
+              " ")
+            (string-downcase (string-take str 1))
             (string-drop str 3))))
       (string-append
         (string-take str 1)
